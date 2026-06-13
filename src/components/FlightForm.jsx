@@ -151,11 +151,11 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
     setSearching(false);
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = e => {
     e.preventDefault();
     setSaving(true);
     try {
-      await addDoc(collection(db, 'flights'), { ...formData, reason: reason.label });
+      addDoc(collection(db, 'flights'), { ...formData, reason: reason.label });
       onSuccess();
     } catch (err) {
       console.error('Error saving flight:', err);
