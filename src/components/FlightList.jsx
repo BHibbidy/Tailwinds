@@ -39,7 +39,7 @@ export default function FlightList() {
                 <tr key={flight.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '12px 8px' }}>{flight.date}</td>
                   <td style={{ padding: '12px 8px', fontWeight: '600', color: 'var(--accent-color)' }}>{flight.flightNumber || '-'}</td>
-                  <td style={{ padding: '12px 8px' }}>{flight.origin} ✈️ {flight.destination}</td>
+                  <td style={{ padding: '12px 8px' }}>{flight.origin} → {flight.destination}</td>
                   <td style={{ padding: '12px 8px' }}>{flight.type}</td>
                   <td style={{ padding: '12px 8px' }}>{flight.tailNumber}</td>
                 </tr>

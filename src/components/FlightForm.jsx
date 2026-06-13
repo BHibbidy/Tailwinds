@@ -4,13 +4,13 @@ import { db } from '../firebase';
 
 // ─── Reason definitions ────────────────────────────────────────────────────
 const REASONS = [
-  { id: 'work',        label: 'Work',        emoji: '💼', description: 'Flying as working crew' },
-  { id: 'commuting',   label: 'Commuting',   emoji: '🔀', description: 'Positioning to or from work' },
-  { id: 'deadhead',    label: 'Deadhead',    emoji: '💺', description: 'Riding as a passenger on duty' },
-  { id: 'instruction', label: 'Instruction', emoji: '🎓', description: 'Flight training or instruction' },
-  { id: 'sim',         label: 'Sim Event',   emoji: '🖥️', description: 'Simulator training session' },
-  { id: 'pleasure',    label: 'Pleasure',    emoji: '🌅', description: 'Personal or leisure flying' },
-  { id: 'other',       label: 'Other',       emoji: '📋', description: 'Anything else' },
+  { id: 'work',        label: 'Work',        description: 'Flying as working crew' },
+  { id: 'commuting',   label: 'Commuting',   description: 'Positioning to or from work' },
+  { id: 'deadhead',    label: 'Deadhead',    description: 'Riding as a passenger on duty' },
+  { id: 'instruction', label: 'Instruction', description: 'Flight training or instruction' },
+  { id: 'sim',         label: 'Sim Event',   description: 'Simulator training session' },
+  { id: 'pleasure',    label: 'Pleasure',    description: 'Personal or leisure flying' },
+  { id: 'other',       label: 'Other',       description: 'Anything else' },
 ];
 
 // ─── Which fields appear for each reason ──────────────────────────────────
@@ -55,16 +55,9 @@ const SIM_OVERRIDES = {
 // ─── Reason Picker ─────────────────────────────────────────────────────────
 function ReasonPicker({ onSelect }) {
   return (
-    <div className="glass-panel" style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <h2 style={{ marginBottom: '8px' }}>New Flight</h2>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '28px' }}>
-        What type of flight would you like to log?
-      </p>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '16px',
-      }}>
+    <div className="glass-panel" style={{ maxWidth: '480px', margin: '0 auto' }}>
+      <h2 style={{ marginBottom: '24px' }}>New Flight</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {REASONS.map(reason => (
           <button
             key={reason.id}
@@ -72,35 +65,30 @@ function ReasonPicker({ onSelect }) {
             onClick={() => onSelect(reason)}
             style={{
               background: 'var(--card-bg)',
-              border: '1px solid var(--card-border)',
-              borderRadius: '14px',
-              padding: '24px 20px',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              padding: '16px 20px',
               cursor: 'pointer',
               textAlign: 'left',
+              fontFamily: 'Inter, sans-serif',
+              fontWeight: '500',
+              fontSize: '1rem',
+              color: 'var(--text-color)',
               backdropFilter: 'blur(12px)',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
+              transition: 'all 0.15s ease',
             }}
             onMouseEnter={e => {
               e.currentTarget.style.borderColor = 'var(--accent-color)';
-              e.currentTarget.style.transform = 'translateY(-3px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px var(--accent-light)';
+              e.currentTarget.style.color = 'var(--accent-color)';
+              e.currentTarget.style.background = 'var(--accent-light)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.borderColor = 'var(--card-border)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.color = 'var(--text-color)';
+              e.currentTarget.style.background = 'var(--card-bg)';
             }}
           >
-            <span style={{ fontSize: '2rem' }}>{reason.emoji}</span>
-            <span style={{ fontWeight: '600', fontSize: '1.1rem', color: 'var(--text-color)' }}>
-              {reason.label}
-            </span>
-            <span style={{ fontSize: '0.825rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-              {reason.description}
-            </span>
+            {reason.label}
           </button>
         ))}
       </div>
@@ -143,7 +131,7 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
         </button>
         <div>
           <h2 style={{ color: 'var(--accent-color)', margin: 0 }}>
-            {reason.emoji} {reason.label}
+            {reason.label}
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
             {reason.description}
