@@ -104,7 +104,8 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
     ...Object.fromEntries(fields.map(f => [f, '']))
   };
   const [formData, setFormData] = useState(initial);
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   const handleChange = e => {
     let { name, value } = e.target;
@@ -127,7 +128,7 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
       return;
     }
 
-    setLoading(true);
+    setSearching(true);
     try {
       const res = await fetch(
         `/api/lookup?date=${encodeURIComponent(formData.date)}&flightNumber=${encodeURIComponent(formData.flightNumber)}&origin=${encodeURIComponent(formData.origin)}`
@@ -147,12 +148,12 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
       console.error('Lookup request error:', err);
       alert('Error connecting to the lookup service.');
     }
-    setLoading(false);
+    setSearching(false);
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     try {
       await addDoc(collection(db, 'flights'), { ...formData, reason: reason.label });
       onSuccess();
@@ -160,7 +161,7 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
       console.error('Error saving flight:', err);
       alert('Error saving flight. Please try again.');
     }
-    setLoading(false);
+    setSaving(false);
   };
 
   return (
@@ -232,9 +233,9 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
               className="btn-secondary"
               style={{ padding: '12px 24px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               onClick={handleLookup}
-              disabled={loading}
+              disabled={searching || saving}
             >
-              {loading ? 'Searching...' : 'Lookup'}
+              {searching ? 'Searching...' : 'Lookup'}
             </button>
           </div>
         </div>
@@ -312,9 +313,9 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
               id="submit-flight-btn"
               className="btn-primary"
               style={{ width: '100%', fontSize: '1.05rem', padding: '16px' }}
-              disabled={loading}
+              disabled={searching || saving}
             >
-              {loading ? 'Saving to Cloud...' : `Save ${reason.label} Flight`}
+              {saving ? 'Saving to Cloud...' : `Save ${reason.label} Flight`}
             </button>
           </div>
         </div>
