@@ -110,6 +110,35 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
 
   const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  const handleLookup = async () => {
+    if (!formData.date || !formData.flightNumber || !formData.origin) {
+      alert('Please fill in Date, Flight Number, and Origin before searching.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/lookup?date=${encodeURIComponent(formData.date)}&flightNumber=${encodeURIComponent(formData.flightNumber)}&origin=${encodeURIComponent(formData.origin)}`
+      );
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Flight lookup failed.');
+      } else {
+        const data = await res.json();
+        // Update form state with the fetched flight data
+        setFormData(prev => ({
+          ...prev,
+          ...data
+        }));
+      }
+    } catch (err) {
+      console.error('Lookup request error:', err);
+      alert('Error connecting to the lookup service.');
+    }
+    setLoading(false);
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
@@ -188,12 +217,10 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
               type="button"
               className="btn-secondary"
               style={{ padding: '12px 24px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              onClick={(e) => {
-                e.preventDefault();
-                // Lookup placeholder for next step
-              }}
+              onClick={handleLookup}
+              disabled={loading}
             >
-              Lookup
+              {loading ? 'Searching...' : 'Lookup'}
             </button>
           </div>
         </div>
