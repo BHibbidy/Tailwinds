@@ -15,13 +15,13 @@ const REASONS = [
 
 // ─── Which fields appear for each reason ──────────────────────────────────
 const FIELD_SETS = {
-  work:        ['date', 'airline', 'flightNumber', 'origin', 'destination', 'tailNumber', 'type', 'night', 'actualInstrument', 'dayTakeoffs', 'nightTakeoffs', 'dayLandings', 'nightLandings', 'approachType', 'crew', 'passengerCount', 'remarks'],
+  work:        ['date', 'airline', 'flightNumber', 'origin', 'destination', 'tailNumber', 'type', 'night', 'actualInstrument', 'takeoffs', 'landings', 'approachType', 'crew', 'passengerCount', 'remarks'],
   commuting:   ['date', 'airline', 'flightNumber', 'origin', 'destination', 'type', 'tailNumber', 'remarks'],
   deadhead:    ['date', 'airline', 'flightNumber', 'origin', 'destination', 'remarks'],
-  instruction: ['date', 'type', 'tailNumber', 'origin', 'destination', 'night', 'actualInstrument', 'dayTakeoffs', 'nightTakeoffs', 'dayLandings', 'nightLandings', 'approachType', 'crew', 'remarks'],
+  instruction: ['date', 'type', 'tailNumber', 'origin', 'destination', 'night', 'actualInstrument', 'takeoffs', 'landings', 'approachType', 'crew', 'remarks'],
   sim:         ['date', 'type', 'actualInstrument', 'approachType', 'crew', 'remarks'],
-  pleasure:    ['date', 'type', 'tailNumber', 'origin', 'destination', 'night', 'actualInstrument', 'dayTakeoffs', 'nightTakeoffs', 'dayLandings', 'nightLandings', 'approachType', 'passengerCount', 'remarks'],
-  other:       ['date', 'airline', 'flightNumber', 'origin', 'destination', 'tailNumber', 'type', 'night', 'actualInstrument', 'dayTakeoffs', 'nightTakeoffs', 'dayLandings', 'nightLandings', 'approachType', 'crew', 'passengerCount', 'remarks'],
+  pleasure:    ['date', 'type', 'tailNumber', 'origin', 'destination', 'night', 'actualInstrument', 'takeoffs', 'landings', 'approachType', 'passengerCount', 'remarks'],
+  other:       ['date', 'airline', 'flightNumber', 'origin', 'destination', 'tailNumber', 'type', 'night', 'actualInstrument', 'takeoffs', 'landings', 'approachType', 'crew', 'passengerCount', 'remarks'],
 };
 
 // ─── Field configuration ───────────────────────────────────────────────────
@@ -35,10 +35,8 @@ const FIELD_CONFIG = {
   type:             { label: 'Aircraft Type / Make & Model', type: 'text' },
   night:            { label: 'Night Hours',               type: 'number',   step: '0.1' },
   actualInstrument: { label: 'Actual Instrument Hours',   type: 'number',   step: '0.1' },
-  dayTakeoffs:      { label: 'Day Takeoffs',              type: 'number' },
-  nightTakeoffs:    { label: 'Night Takeoffs',            type: 'number' },
-  dayLandings:      { label: 'Day Landings',              type: 'number' },
-  nightLandings:    { label: 'Night Landings',            type: 'number' },
+  takeoffs:         { label: 'Takeoffs',                  type: 'radio',    options: [{ value: 'day', label: 'Day' }, { value: 'night', label: 'Night' }] },
+  landings:         { label: 'Landings',                  type: 'radio',    options: [{ value: 'day', label: 'Day' }, { value: 'night', label: 'Night' }] },
   approachType:     { label: 'Approach Type',             type: 'text' },
   crew:             { label: 'Crew',                      type: 'text',     wide: true },
   passengerCount:   { label: 'Passenger Count',           type: 'number' },
@@ -108,7 +106,20 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
   const [formData, setFormData] = useState(initial);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = e => {
+    let { name, value } = e.target;
+    if (name === 'origin' || name === 'destination') {
+      value = value.toUpperCase();
+    }
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleLookupKeyDown = e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleLookup();
+    }
+  };
 
   const handleLookup = async () => {
     if (!formData.date || !formData.flightNumber || !formData.origin) {
@@ -192,6 +203,7 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
               required
               value={formData.date}
               onChange={handleChange}
+              onKeyDown={handleLookupKeyDown}
             />
           </div>
           <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
@@ -201,6 +213,7 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
               name="flightNumber"
               value={formData.flightNumber}
               onChange={handleChange}
+              onKeyDown={handleLookupKeyDown}
             />
           </div>
           <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
@@ -210,6 +223,7 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
               name="origin"
               value={formData.origin}
               onChange={handleChange}
+              onKeyDown={handleLookupKeyDown}
             />
           </div>
           <div style={{ flex: '0 0 auto' }}>
@@ -252,6 +266,32 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
                     value={formData[fieldKey]}
                     onChange={handleChange}
                   />
+                ) : config.type === 'radio' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', height: '42px' }}>
+                    {config.options.map(opt => (
+                      <label key={opt.value} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', margin: 0, fontWeight: 'normal' }}>
+                        <input
+                          type="radio"
+                          name={fieldKey}
+                          value={opt.value}
+                          checked={formData[fieldKey] === opt.value}
+                          onChange={handleChange}
+                          style={{ width: 'auto', margin: 0 }}
+                        />
+                        {opt.label}
+                      </label>
+                    ))}
+                    {formData[fieldKey] && (
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ padding: '2px 8px', fontSize: '0.75rem', height: '24px' }}
+                        onClick={() => setFormData(prev => ({ ...prev, [fieldKey]: '' }))}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <input
                     type={config.type}
