@@ -27,19 +27,19 @@ const FIELD_SETS = {
 // ─── Field configuration ───────────────────────────────────────────────────
 const FIELD_CONFIG = {
   date:             { label: 'Date',                      type: 'date',     required: true },
-  airline:          { label: 'Airline',                   type: 'text',     placeholder: 'e.g. Delta, United' },
-  flightNumber:     { label: 'Flight Number',             type: 'text',     placeholder: 'e.g. DL 404' },
-  origin:           { label: 'Origin',                    type: 'text',     placeholder: 'e.g. KJFK' },
-  destination:      { label: 'Destination',               type: 'text',     placeholder: 'e.g. KLAX' },
-  tailNumber:       { label: 'Tail Number',               type: 'text',     placeholder: 'e.g. N12345' },
-  type:             { label: 'Aircraft Type / Make & Model', type: 'text',  placeholder: 'e.g. B737, C172' },
+  airline:          { label: 'Airline',                   type: 'text' },
+  flightNumber:     { label: 'Flight Number',             type: 'text' },
+  origin:           { label: 'Origin',                    type: 'text' },
+  destination:      { label: 'Destination',               type: 'text' },
+  tailNumber:       { label: 'Tail Number',               type: 'text' },
+  type:             { label: 'Aircraft Type / Make & Model', type: 'text' },
   night:            { label: 'Night Hours',               type: 'number',   step: '0.1' },
   actualInstrument: { label: 'Actual Instrument Hours',   type: 'number',   step: '0.1' },
   dayTakeoffs:      { label: 'Day Takeoffs',              type: 'number' },
   nightTakeoffs:    { label: 'Night Takeoffs',            type: 'number' },
   dayLandings:      { label: 'Day Landings',              type: 'number' },
   nightLandings:    { label: 'Night Landings',            type: 'number' },
-  approachType:     { label: 'Approach Type',             type: 'text',     placeholder: 'e.g. ILS, RNAV, VFR' },
+  approachType:     { label: 'Approach Type',             type: 'text' },
   crew:             { label: 'Crew',                      type: 'text',     wide: true },
   passengerCount:   { label: 'Passenger Count',           type: 'number' },
   remarks:          { label: 'Remarks',                   type: 'textarea', wide: true },
@@ -99,7 +99,12 @@ function ReasonPicker({ onSelect }) {
 // ─── Flight Form ───────────────────────────────────────────────────────────
 function FlightEntryForm({ reason, onSuccess, onBack }) {
   const fields = FIELD_SETS[reason.id];
-  const initial = Object.fromEntries(fields.map(f => [f, '']));
+  const initial = {
+    date: '',
+    flightNumber: '',
+    origin: '',
+    ...Object.fromEntries(fields.map(f => [f, '']))
+  };
   const [formData, setFormData] = useState(initial);
   const [loading, setLoading] = useState(false);
 
@@ -133,65 +138,118 @@ function FlightEntryForm({ reason, onSuccess, onBack }) {
           <h2 style={{ color: 'var(--accent-color)', margin: 0 }}>
             {reason.label}
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
-            {reason.description}
-          </p>
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '16px',
-      }}>
-        {fields.map(fieldKey => {
-          const config = FIELD_CONFIG[fieldKey];
-          const label = reason.id === 'sim' && SIM_OVERRIDES[fieldKey]
-            ? SIM_OVERRIDES[fieldKey]
-            : config.label;
-          const isWide = config.wide;
-
-          return (
-            <div
-              key={fieldKey}
-              className="input-group"
-              style={{ gridColumn: isWide ? '1 / -1' : undefined, marginBottom: 0 }}
+      <form onSubmit={handleSubmit}>
+        {/* Set-apart core & lookup section */}
+        <div style={{
+          border: '1px solid var(--border-color)',
+          borderRadius: '12px',
+          padding: '20px',
+          background: 'rgba(255, 255, 255, 0.02)',
+          marginBottom: '24px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '16px',
+          alignItems: 'end'
+        }}>
+          <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
+            <label>Date<span style={{ color: 'var(--accent-color)' }}> *</span></label>
+            <input
+              type="date"
+              name="date"
+              required
+              value={formData.date}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
+            <label>Flight Number</label>
+            <input
+              type="text"
+              name="flightNumber"
+              value={formData.flightNumber}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="input-group" style={{ flex: '1 1 150px', marginBottom: 0 }}>
+            <label>Origin</label>
+            <input
+              type="text"
+              name="origin"
+              value={formData.origin}
+              onChange={handleChange}
+            />
+          </div>
+          <div style={{ flex: '0 0 auto' }}>
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{ padding: '12px 24px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              onClick={(e) => {
+                e.preventDefault();
+                // Lookup placeholder for next step
+              }}
             >
-              <label>{label}{config.required && <span style={{ color: 'var(--accent-color)' }}> *</span>}</label>
-              {config.type === 'textarea' ? (
-                <textarea
-                  name={fieldKey}
-                  rows="3"
-                  value={formData[fieldKey]}
-                  onChange={handleChange}
-                  placeholder={config.placeholder}
-                />
-              ) : (
-                <input
-                  type={config.type}
-                  name={fieldKey}
-                  required={config.required}
-                  step={config.step}
-                  value={formData[fieldKey]}
-                  onChange={handleChange}
-                  placeholder={config.placeholder}
-                />
-              )}
-            </div>
-          );
-        })}
+              Lookup
+            </button>
+          </div>
+        </div>
 
-        <div style={{ gridColumn: '1 / -1', marginTop: '8px' }}>
-          <button
-            type="submit"
-            id="submit-flight-btn"
-            className="btn-primary"
-            style={{ width: '100%', fontSize: '1.05rem', padding: '16px' }}
-            disabled={loading}
-          >
-            {loading ? 'Saving to Cloud...' : `Save ${reason.label} Flight`}
-          </button>
+        {/* Other fields */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px',
+        }}>
+          {fields.filter(fieldKey => !['date', 'flightNumber', 'origin'].includes(fieldKey)).map(fieldKey => {
+            const config = FIELD_CONFIG[fieldKey];
+            const label = reason.id === 'sim' && SIM_OVERRIDES[fieldKey]
+              ? SIM_OVERRIDES[fieldKey]
+              : config.label;
+            const isWide = config.wide;
+
+            return (
+              <div
+                key={fieldKey}
+                className="input-group"
+                style={{ gridColumn: isWide ? '1 / -1' : undefined, marginBottom: 0 }}
+              >
+                <label>{label}{config.required && <span style={{ color: 'var(--accent-color)' }}> *</span>}</label>
+                {config.type === 'textarea' ? (
+                  <textarea
+                    name={fieldKey}
+                    rows="3"
+                    value={formData[fieldKey]}
+                    onChange={handleChange}
+                  />
+                ) : (
+                  <input
+                    type={config.type}
+                    name={fieldKey}
+                    required={config.required}
+                    step={config.step}
+                    value={formData[fieldKey]}
+                    onChange={handleChange}
+                  />
+                )}
+              </div>
+            );
+          })}
+
+          <div style={{ gridColumn: '1 / -1', marginTop: '8px' }}>
+            <button
+              type="submit"
+              id="submit-flight-btn"
+              className="btn-primary"
+              style={{ width: '100%', fontSize: '1.05rem', padding: '16px' }}
+              disabled={loading}
+            >
+              {loading ? 'Saving to Cloud...' : `Save ${reason.label} Flight`}
+            </button>
+          </div>
         </div>
       </form>
     </div>
